@@ -131,20 +131,30 @@
   // ---------------------------------------------------------------
 
   function addUnitPrices() {
-    document.querySelectorAll('.ec-cart__item:not(.ec-cart-item--summary)').forEach(function (itemEl) {
+    var itemEls = document.querySelectorAll('.ec-cart__item:not(.ec-cart-item--summary)');
+
+    // 1) Sumar TODAS las piezas del carrito (sin importar modelo/sabor),
+    //    porque el mayoreo se activa por el total del carrito, no por línea.
+    var totalQty = 0;
+    itemEls.forEach(function (itemEl) {
+      var qtyEl = itemEl.querySelector('.ec-cart-item__count input') || itemEl.querySelector('.ec-cart-item__count');
+      if (!qtyEl) return;
+      var qty = parseInt(qtyEl.value || qtyEl.textContent);
+      if (qty) totalQty += qty;
+    });
+
+    if (totalQty <= 1) return; // carrito con 1 sola pieza: no aplica mayoreo, no hay nada que mostrar
+
+    // 2) Para cada línea, buscar el precio de SU modelo al nivel del total del carrito
+    itemEls.forEach(function (itemEl) {
       if (itemEl.querySelector('.vz-unit-price')) return;
 
       var titleEl = itemEl.querySelector('.ec-cart-item__title');
-      var qtyEl = itemEl.querySelector('.ec-cart-item__count input') || itemEl.querySelector('.ec-cart-item__count');
-
-      if (!titleEl || !qtyEl) return;
+      if (!titleEl) return;
 
       var productName = titleEl.textContent.trim();
-      var qty = parseInt(qtyEl.value || qtyEl.textContent);
-      if (!qty || qty <= 1) return;
-
-      var unitPrice = getUnitPrice(productName, qty);
-      if (unitPrice === null) return; // modelo no está en la tabla, no mostramos nada (evita precio incorrecto)
+      var unitPrice = getUnitPrice(productName, totalQty);
+      if (unitPrice === null) return; // modelo no está en la tabla, no mostramos nada
 
       var priceEl = itemEl.querySelector('.ec-cart-item__price-inner');
       if (!priceEl) return;
