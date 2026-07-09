@@ -97,14 +97,22 @@
     return str.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
   }
 
-  function findPriceTiers(productName) {
-    const norm = normalize(productName);
-    if (PRICE_TABLE[norm]) return PRICE_TABLE[norm];
+  // Versión "compacta": sin espacios ni signos, para que "NOVA BAR 35K" y
+  // "NOVABAR 35K" (o cualquier variación de espaciado) hagan match igual.
+  function compact(str) {
+    return normalize(str).replace(/[^A-Z0-9]/g, '');
+  }
 
-    // Probar claves más largas primero (evita que "VFLY" gane sobre "VFLY ZERO CLOUD")
-    const keys = Object.keys(PRICE_TABLE).sort((a, b) => b.length - a.length);
-    for (const key of keys) {
-      if (norm.includes(key)) return PRICE_TABLE[key];
+  // Precalcular claves compactas, ordenadas de más larga a más corta
+  // (para que "VFLY ZERO CLOUD" gane sobre "VFLY" cuando ambas calzan)
+  const COMPACT_KEYS = Object.keys(PRICE_TABLE)
+    .map(function (key) { return { key: key, compact: compact(key) }; })
+    .sort(function (a, b) { return b.compact.length - a.compact.length; });
+
+  function findPriceTiers(productName) {
+    const compactName = compact(productName);
+    for (const entry of COMPACT_KEYS) {
+      if (compactName.includes(entry.compact)) return PRICE_TABLE[entry.key];
     }
     return null;
   }
