@@ -3,18 +3,18 @@ function addUnitPrices() {
   if (!items.length) return;
 
   // Leer descuento total
-  var discountEl = document.querySelector('.ec-cart-summary__row--discount');
   var totalDiscount = 0;
+  var discountEl = document.querySelector('.ec-cart-summary__row--discount');
   if (discountEl) {
-    var discountText = discountEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '');
+    var discountText = discountEl.textContent.replace(/[^0-9.]/g, '');
     totalDiscount = parseFloat(discountText) || 0;
   }
 
-  // Leer subtotal total (antes de descuento)
-  var subtotalEl = document.querySelector('.ec-cart-summary__row--subtotal .ec-cart-summary__cell--total, .ec-cart-summary__row:first-child .ec-cart-summary__cell--total');
+  // Leer subtotal correcto
   var totalSubtotal = 0;
+  var subtotalEl = document.querySelector('.ec-cart-summary__row--items');
   if (subtotalEl) {
-    var subtotalText = subtotalEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '');
+    var subtotalText = subtotalEl.textContent.replace(/[^0-9.]/g, '');
     totalSubtotal = parseFloat(subtotalText) || 0;
   }
 
@@ -26,14 +26,13 @@ function addUnitPrices() {
 
     if (!priceEl || !qtyEl) return;
 
-    var totalText = priceEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '');
+    var totalText = priceEl.textContent.replace(/[^0-9.]/g, '');
     var qty = parseInt(qtyEl.value || qtyEl.textContent);
 
     if (!qty || qty <= 1) return;
 
     var lineTotal = parseFloat(totalText);
 
-    // Calcular descuento proporcional para esta línea
     var lineDiscount = 0;
     if (totalSubtotal > 0 && totalDiscount > 0) {
       lineDiscount = (lineTotal / totalSubtotal) * totalDiscount;
