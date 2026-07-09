@@ -23,10 +23,19 @@ function addUnitPrices() {
   });
 }
 
+function waitForCart() {
+  var items = document.querySelectorAll('.ec-cart__item:not(.ec-cart-item--summary)');
+  if (items.length > 0) {
+    addUnitPrices();
+  } else {
+    setTimeout(waitForCart, 500);
+  }
+}
+
 if (typeof Ecwid !== 'undefined') {
   Ecwid.OnPageLoaded.add(function(page) {
     if (page.type === 'CART') {
-      setTimeout(addUnitPrices, 800);
+      waitForCart();
     }
   });
   Ecwid.OnCartChanged.add(function() {
@@ -34,5 +43,9 @@ if (typeof Ecwid !== 'undefined') {
       document.querySelectorAll('.vz-unit-price').forEach(function(el) { el.remove(); });
       addUnitPrices();
     }, 800);
+  });
+} else {
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(waitForCart, 1000);
   });
 }
