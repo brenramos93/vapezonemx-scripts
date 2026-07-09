@@ -1,0 +1,38 @@
+function addUnitPrices() {
+  document.querySelectorAll('.ec-cart__item:not(.ec-cart-item--summary)').forEach(function(itemEl) {
+    if (itemEl.querySelector('.vz-unit-price')) return;
+
+    var priceEl = itemEl.querySelector('.ec-cart-item__price-inner');
+    var qtyEl = itemEl.querySelector('.ec-cart-item__count input') || itemEl.querySelector('.ec-cart-item__count');
+
+    if (!priceEl || !qtyEl) return;
+
+    var totalText = priceEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '');
+    var qty = parseInt(qtyEl.value || qtyEl.textContent);
+
+    if (!qty || qty <= 1) return;
+
+    var total = parseFloat(totalText);
+    var unitPrice = total / qty;
+
+    var tag = document.createElement('div');
+    tag.className = 'vz-unit-price';
+    tag.style.cssText = 'font-size:12px;color:#888;text-align:right;margin-top:3px;';
+    tag.textContent = '$' + unitPrice.toLocaleString('es-MX', {minimumFractionDigits:2}) + ' c/u';
+    priceEl.parentNode.appendChild(tag);
+  });
+}
+
+if (typeof Ecwid !== 'undefined') {
+  Ecwid.OnPageLoaded.add(function(page) {
+    if (page.type === 'CART') {
+      setTimeout(addUnitPrices, 800);
+    }
+  });
+  Ecwid.OnCartChanged.add(function() {
+    setTimeout(function() {
+      document.querySelectorAll('.vz-unit-price').forEach(function(el) { el.remove(); });
+      addUnitPrices();
+    }, 800);
+  });
+}
